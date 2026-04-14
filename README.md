@@ -1,112 +1,71 @@
- Flask App Deployment on AWS EC2 with Gunicorn, Nginx & HTTPS
+# Flask App Deployment — AWS EC2 Production Setup
 
-📌 Project Overview
+A simple Flask web app that I deployed end-to-end on AWS EC2 — from a blank Linux server to a live HTTPS URL. This was my 3rd project, and the first time I added SSL and Gunicorn to a production setup.
 
-This project demonstrates how to deploy a Flask web application on an AWS EC2 instance using Gunicorn as the application server and Nginx as a reverse proxy. It also includes HTTPS setup using Let's Encrypt.
-
----
-
-🛠️ Tech Stack
-
-- Python (Flask)
-- Gunicorn
-- Nginx
-- AWS EC2 (Ubuntu)
-- DuckDNS (Free domain)
-- Let's Encrypt (SSL)
+The app returns a response from the server — small output, but the real learning was everything around it: configuring the server, debugging errors, and getting HTTPS to work.
 
 ---
 
-⚙️ Steps Performed
+## What I built and configured
 
-1️⃣ Launch EC2 Instance
-
-- Created Ubuntu EC2 instance
-- Opened ports: 22 (SSH), 80 (HTTP), 443 (HTTPS)
-
----
-
-2️⃣ Setup Project
-
-- Connected to EC2 via SSH
-- Created project folder
-- Setup Python virtual environment
-- Installed Flask and Gunicorn
+- Launched an AWS EC2 instance (Ubuntu Linux) from scratch
+- Configured Nginx as a reverse proxy to route traffic to the app
+- Set up Gunicorn as the WSGI server to serve Flask in production
+- Secured the site with HTTPS using Let's Encrypt + Certbot
+- Configured DNS and domain routing
+- Debugged real production errors: 502 Bad Gateway, 500 Internal Server Error
 
 ---
 
-3️⃣ Run Flask App
+## Architecture
 
-python app.py
-
----
-
-4️⃣ Run with Gunicorn
-
-gunicorn --bind 0.0.0.0:8000 app:app
+Browser → DNS → EC2 Public IP → Nginx (port 80/443) → Gunicorn → Flask App
 
 ---
 
-5️⃣ Configure Nginx
+## Errors I actually faced (and fixed)
 
-- Installed Nginx
-- Configured reverse proxy to Gunicorn
-- Removed port usage (used domain instead)
+**502 Bad Gateway**
+Nginx was running but couldn't reach Gunicorn. Root cause: Gunicorn wasn't started yet. Fix: started Gunicorn and confirmed the socket path matched the Nginx config.
 
----
+**500 Internal Server Error**
+The app itself was throwing an error. Checked the Gunicorn logs, found the issue in the Flask code, fixed and restarted.
 
-6️⃣ Setup Domain (DuckDNS)
-
-- Created free domain
-- Pointed domain to EC2 public IP
+Total debugging time: ~5–6 hours across the full deployment.
 
 ---
 
-7️⃣ Enable HTTPS
+## How I debugged
 
-sudo certbot --nginx -d your-domain.duckdns.org
-
-- SSL certificate installed
-- HTTPS enabled successfully
+A mix of reading error logs manually, searching specific error messages, and using AI tools to understand what the logs meant. The actual fixes were applied and tested by me.
 
 ---
 
-🌐 Final Result
+## What I learned from this vs my previous projects
 
-- App runs on:
-  - HTTP → http://your-domain
-  - HTTPS → https://your-domain
-
----
-
-📂 Project Structure
-
-myproject/
-│── app.py
-│── requirements.txt
+- My 2nd project didn't have HTTPS or Gunicorn — this one does
+- Each project taught me one more layer of how production servers actually work
+- Next goal: automate this setup with a shell script or Ansible
 
 ---
 
-📦 Requirements
+## Why it's not live
 
-Install dependencies using:
+Deployed and tested successfully. EC2 instance stopped to avoid ongoing AWS charges — a deliberate cost management decision.
 
+---
+
+## Stack
+
+Python · Flask · AWS EC2 · Ubuntu Linux · Nginx · Gunicorn · SSL/TLS · Let's Encrypt · Certbot · DNS · Git
+
+---
+
+## Run locally
+
+```bash
+git clone https://github.com/Kishore-infra/flash-aws--ec2-nginx-gunicorn-deployement.git
+cd your-repo-name
 pip install -r requirements.txt
-
----
-
-💡 Key Learnings
-
-- Deploying Flask app on cloud
-- Using Gunicorn as WSGI server
-- Configuring Nginx as reverse proxy
-- Setting up HTTPS with Let's Encrypt
-- Debugging real-world deployment errors
-
----
-
-🔥 Author
-
-Kishore
-
----
+python app.py
+```
